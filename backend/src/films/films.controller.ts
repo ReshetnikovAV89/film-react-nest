@@ -1,10 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 
 import { FilmsService } from './films.service';
-import {
-  FilmsResponseDto,
-  FilmScheduleResponseDto,
-} from './dto/films.dto';
+import { FilmsResponseDto, FilmScheduleResponseDto } from './dto/films.dto';
 
 @Controller('films')
 export class FilmsController {
