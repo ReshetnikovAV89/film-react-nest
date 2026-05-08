@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+
 import { OrderService } from './order.service';
 import { CreateOrderDto, OrderResponseDto } from './dto/order.dto';
 
@@ -7,7 +8,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  createOrder(@Body() orderItems: CreateOrderDto[]): OrderResponseDto {
+  createOrder(@Body() orderItems: CreateOrderDto[]): Promise<OrderResponseDto> {
     return this.orderService.createOrder(orderItems);
   }
 }

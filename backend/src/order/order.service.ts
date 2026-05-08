@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
+
+import { FilmsRepository } from '../repository/films.repository';
 import { CreateOrderDto, OrderResponseDto } from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
-  createOrder(orderItems: CreateOrderDto[]): OrderResponseDto {
+  constructor(private readonly filmsRepository: FilmsRepository) {}
+
+  async createOrder(orderItems: CreateOrderDto[]): Promise<OrderResponseDto> {
+    const bookedTickets = await this.filmsRepository.bookTickets(orderItems);
+
     return {
-      total: orderItems.length,
-      items: orderItems.map((orderItem, index) => ({
-        ...orderItem,
-        id: `temporary-order-id-${index + 1}`,
-      })),
+      total: bookedTickets.length,
+      items: bookedTickets,
     };
   }
 }
