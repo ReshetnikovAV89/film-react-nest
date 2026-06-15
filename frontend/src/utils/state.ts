@@ -43,7 +43,12 @@ export const initialState: AppState = {
 
 const addTicket = (state: AppState, key: string): AppState => {
     const [row, seat] = key.split(':').map(Number);
-    const isExists = state.basket.some(ticket => ticket.row === row && ticket.seat === seat);
+    const isExists = state.basket.some(ticket =>
+    ticket.film === state.selectedFilm &&
+    ticket.session === state.selectedSession &&
+    ticket.row === row &&
+    ticket.seat === seat
+);
     const session = state.schedule.find(session => session.id === state.selectedSession);
     if (session) {
         if (!isExists) {
@@ -76,7 +81,14 @@ const removeTicket = (state: AppState, key: string): AppState => {
     const [row, seat] = key.split(':').map(Number);
     return {
         ...state,
-        basket: state.basket.filter(ticket => ticket.row !== row || ticket.seat !== seat)
+        basket: state.basket.filter(ticket =>
+    !(
+        ticket.film === state.selectedFilm &&
+        ticket.session === state.selectedSession &&
+        ticket.row === row &&
+        ticket.seat === seat
+    )
+)
     };
 }
 
@@ -88,7 +100,7 @@ const validateOrder = (state: AppState): AppState => {
     }
     //validate phone with regexp
     if (state.contacts.phone && !/\+7\d{10}/.test(state.contacts.phone)) {
-        errors.push('Некорректный телефон');
+        errors.push('Введите телефон в формате +79001234567');
     }
 
     if (errors.length === 0) {
@@ -115,10 +127,12 @@ export function appReducer(state: AppState, action: Actions): AppState {
                 selectedFilm: action.payload[0].id
             };
         case 'selectFilm':
-            return {
-                ...state,
-                selectedFilm: action.payload
-            };
+    return {
+        ...state,
+        selectedFilm: action.payload,
+        selectedSession: null,
+        basket: []
+    };
         case 'setSchedule':
             return {
                 ...state,
@@ -126,10 +140,11 @@ export function appReducer(state: AppState, action: Actions): AppState {
                 modal: 'schedule'
             };
         case 'selectSession':
-            return {
-                ...state,
-                selectedSession: action.payload
-            };
+    return {
+        ...state,
+        selectedSession: action.payload,
+        basket: []
+    };
         case 'addToBasket': return addTicket(state, action.payload);
         case 'removeFromBasket': return removeTicket(state, action.payload);
         case 'setContacts':

@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import * as path from 'node:path';
 
 import { configProvider } from './app.config.provider';
+import { Film } from './films/entities/film.entity';
+import { Schedule } from './films/entities/schedule.entity';
 import { FilmsController } from './films/films.controller';
 import { FilmsService } from './films/films.service';
-import { Film, FilmSchema } from './films/schemas/film.schema';
 import { OrderController } from './order/order.controller';
 import { OrderService } from './order/order.service';
 import { FilmsRepository } from './repository/films.repository';
@@ -18,13 +19,26 @@ import { FilmsRepository } from './repository/films.repository';
       isGlobal: true,
       cache: true,
     }),
-    MongooseModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('DATABASE_URL'),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = new URL(
+          configService.getOrThrow<string>('DATABASE_URL'),
+        );
+
+        return {
+          type: configService.getOrThrow<'postgres'>('DATABASE_DRIVER'),
+          host: databaseUrl.hostname,
+          port: Number(databaseUrl.port || 5432),
+          database: databaseUrl.pathname.replace('/', ''),
+          username: configService.getOrThrow<string>('DATABASE_USERNAME'),
+          password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
+          entities: [Film, Schedule],
+          synchronize: false,
+        };
+      },
     }),
-    MongooseModule.forFeature([{ name: Film.name, schema: FilmSchema }]),
+    TypeOrmModule.forFeature([Film, Schedule]),
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'public', 'content', 'afisha'),
       serveRoot: '/content/afisha',

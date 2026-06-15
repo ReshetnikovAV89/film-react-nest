@@ -37,9 +37,9 @@ export function ContactsForm({ value, onChange }: ContactsFormProps) {
                     className={styles.input}
                     name="phone"
                     type="tel"
-                    placeholder="Телефон"
-                    pattern="^[0-9\+\-\(\)\s]{11,25}$"
-                    data-validation-message="Введите номер в формате '+7 (000) 000-00-00'."
+                    placeholder="+79001234567"
+                    pattern="^\+7\d{10}$"
+                    data-validation-message="Введите номер в формате +79001234567."
                 />
             </label>
         </form>

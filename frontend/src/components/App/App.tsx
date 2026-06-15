@@ -51,7 +51,10 @@ function App() {
             {(state.modal === 'places' && data.session) && <SelectPlaces
                 hall={{ rows: data.session.rows, seats: data.session.seats }}
                 taken={data.session.taken}
-                selected={state.basket}
+                selected={state.basket.filter((ticket) =>
+    ticket.film === state.selectedFilm &&
+    ticket.session === state.selectedSession
+)}
                 onSelect={handlers.selectPlace}
             />}
 
