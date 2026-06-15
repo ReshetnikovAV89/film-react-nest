@@ -1,6 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
-import { FilmsRepository } from '../repository/films.repository';
+import {
+  BookTicketsError,
+  FilmsRepository,
+} from '../repository/films.repository';
 import {
   CreateOrderDto,
   CreateOrderRequestDto,
@@ -16,11 +23,23 @@ export class OrderService {
   ): Promise<OrderResponseDto> {
     const orderItems = Array.isArray(order) ? order : order.tickets;
 
-    const bookedTickets = await this.filmsRepository.bookTickets(orderItems);
+    const result = await this.filmsRepository.bookTickets(orderItems);
+
+    if (result.error === BookTicketsError.SessionNotFound) {
+      throw new NotFoundException('Session not found');
+    }
+
+    if (result.error === BookTicketsError.FilmNotFound) {
+      throw new NotFoundException('Film not found');
+    }
+
+    if (result.error === BookTicketsError.SeatAlreadyBooked) {
+      throw new BadRequestException('Seat already booked');
+    }
 
     return {
-      total: bookedTickets.length,
-      items: bookedTickets,
+      total: result.items.length,
+      items: result.items,
     };
   }
 }

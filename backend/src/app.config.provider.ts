@@ -6,7 +6,9 @@ export const configProvider = {
   useFactory: (configService: ConfigService): AppConfig => ({
     database: {
       driver: configService.get<string>('DATABASE_DRIVER', 'postgres'),
-      url: configService.get<string>('DATABASE_URL', ''),
+      host: configService.get<string>('DATABASE_HOST', 'localhost'),
+      port: Number(configService.get<string>('DATABASE_PORT', '5432')),
+      name: configService.get<string>('DATABASE_NAME', 'film'),
       username: configService.get<string>('DATABASE_USERNAME', ''),
       password: configService.get<string>('DATABASE_PASSWORD', ''),
     },
@@ -19,7 +21,9 @@ export interface AppConfig {
 
 export interface AppConfigDatabase {
   driver: string;
-  url: string;
+  host: string;
+  port: number;
+  name: string;
   username: string;
   password: string;
 }

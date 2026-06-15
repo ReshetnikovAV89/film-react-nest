@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -10,6 +6,17 @@ import { In, Repository } from 'typeorm';
 import { Film } from '../films/entities/film.entity';
 import { Schedule } from '../films/entities/schedule.entity';
 import { CreateOrderDto, OrderItemDto } from '../order/dto/order.dto';
+
+export enum BookTicketsError {
+  SessionNotFound = 'SESSION_NOT_FOUND',
+  FilmNotFound = 'FILM_NOT_FOUND',
+  SeatAlreadyBooked = 'SEAT_ALREADY_BOOKED',
+}
+
+export interface BookTicketsResult {
+  items: OrderItemDto[];
+  error?: BookTicketsError;
+}
 
 @Injectable()
 export class FilmsRepository {
@@ -33,11 +40,11 @@ export class FilmsRepository {
     });
   }
 
-  async findScheduleByFilmId(filmId: string): Promise<Schedule[]> {
+  async findScheduleByFilmId(filmId: string): Promise<Schedule[] | null> {
     const film = await this.filmRepository.findOneBy({ id: filmId });
 
     if (!film) {
-      throw new NotFoundException('Film not found');
+      return null;
     }
 
     return this.scheduleRepository.find({
@@ -52,7 +59,7 @@ export class FilmsRepository {
     });
   }
 
-  async bookTickets(orderItems: CreateOrderDto[]): Promise<OrderItemDto[]> {
+  async bookTickets(orderItems: CreateOrderDto[]): Promise<BookTicketsResult> {
     const sessionIds = [
       ...new Set(orderItems.map((orderItem) => orderItem.session)),
     ];
@@ -77,17 +84,26 @@ export class FilmsRepository {
       const session = schedulesById.get(orderItem.session);
 
       if (!session) {
-        throw new NotFoundException('Session not found');
+        return {
+          items: [],
+          error: BookTicketsError.SessionNotFound,
+        };
       }
 
       if (session.film.id !== orderItem.film) {
-        throw new NotFoundException('Film not found');
+        return {
+          items: [],
+          error: BookTicketsError.FilmNotFound,
+        };
       }
 
       const seatKey = `${orderItem.row}:${orderItem.seat}`;
 
       if (session.taken.includes(seatKey)) {
-        throw new BadRequestException('Seat already booked');
+        return {
+          items: [],
+          error: BookTicketsError.SeatAlreadyBooked,
+        };
       }
 
       session.taken.push(seatKey);
@@ -101,6 +117,8 @@ export class FilmsRepository {
 
     await this.scheduleRepository.save([...changedSchedules]);
 
-    return bookedTickets;
+    return {
+      items: bookedTickets,
+    };
   }
 }

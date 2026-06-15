@@ -21,22 +21,16 @@ import { FilmsRepository } from './repository/films.repository';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const databaseUrl = new URL(
-          configService.getOrThrow<string>('DATABASE_URL'),
-        );
-
-        return {
-          type: configService.getOrThrow<'postgres'>('DATABASE_DRIVER'),
-          host: databaseUrl.hostname,
-          port: Number(databaseUrl.port || 5432),
-          database: databaseUrl.pathname.replace('/', ''),
-          username: configService.getOrThrow<string>('DATABASE_USERNAME'),
-          password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
-          entities: [Film, Schedule],
-          synchronize: false,
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: configService.getOrThrow<'postgres'>('DATABASE_DRIVER'),
+        host: configService.getOrThrow<string>('DATABASE_HOST'),
+        port: Number(configService.getOrThrow<string>('DATABASE_PORT')),
+        database: configService.getOrThrow<string>('DATABASE_NAME'),
+        username: configService.getOrThrow<string>('DATABASE_USERNAME'),
+        password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
+        entities: [Film, Schedule],
+        synchronize: false,
+      }),
     }),
     TypeOrmModule.forFeature([Film, Schedule]),
     ServeStaticModule.forRoot({
