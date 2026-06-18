@@ -4,7 +4,7 @@ const {
   DEPLOY_USER,
   DEPLOY_HOST,
   DEPLOY_PATH,
-  DEPLOY_REF = 'origin/review-2',
+  DEPLOY_REF = 'origin/deploy-pm2',
 } = process.env;
 
 module.exports = {
