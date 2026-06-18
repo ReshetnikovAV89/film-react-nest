@@ -35,7 +35,7 @@ module.exports = {
       repo: 'https://github.com/ReshetnikovAV89/film-react-nest.git',
       path: DEPLOY_PATH,
       'pre-deploy-local': `scp ./.env ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/shared/.env`,
-      'post-deploy': 'bash -lc "source /home/andre/.nvm/nvm.sh && cd /home/andre/film-react-nest/current && cp ../shared/.env ./backend/.env && cd backend && npm ci && npm run build && (pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production) && pm2 save"',
+      'post-deploy': '. /home/andre/.nvm/nvm.sh && cd /home/andre/film-react-nest/current && cp ../shared/.env ./backend/.env && cd backend && npm ci && npm run build && (pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production) && pm2 save',
     },
   },
 };
