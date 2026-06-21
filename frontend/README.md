@@ -1,30 +1,65 @@
-# React + TypeScript + Vite
+# FILM! Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend-часть проекта FILM!.
 
-Currently, two official plugins are available:
+## Описание
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Frontend реализован на React + TypeScript + Vite.
 
-## Expanding the ESLint configuration
+Приложение получает данные о фильмах и расписании из backend API, отображает карточки фильмов и позволяет оформить заказ на выбранное место.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Стек
 
-- Configure the top-level `parserOptions` property like this:
+* React
+* TypeScript
+* Vite
+* SCSS
+* Docker
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+## Переменные окружения
+
+Создайте `.env` из `.env.example`.
+
+### Локальная разработка
+
+```env
+VITE_API_URL=https://stub.practicum-team.ru/api/afisha
+VITE_CDN_URL=https://stub.practicum-team.ru/content/afisha
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Docker-сборка
+
+Для Docker-сборки используются значения:
+
+```env
+VITE_API_URL=/api/afisha
+VITE_CDN_URL=/content/afisha
+```
+
+Так frontend обращается к backend через nginx.
+
+## Запуск локально
+
+### Установить зависимости
+
+```bash
+npm install
+```
+
+### Запустить dev-сервер
+
+```bash
+npm run dev
+```
+
+## Сборка
+
+```bash
+npm run build
+```
+
+## Preview production-сборки
+
+```bash
+npm run preview
+```
