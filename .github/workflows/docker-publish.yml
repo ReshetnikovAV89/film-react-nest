@@ -1,0 +1,66 @@
+name: Publish Docker images
+
+on:
+  push:
+    branches:
+      - main
+      - review-2
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: reshetnikovav89
+  VITE_API_URL: /api/afisha
+  VITE_CDN_URL: /content/afisha
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-backend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-backend:${{ github.sha }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_API_URL=${{ env.VITE_API_URL }}
+            VITE_CDN_URL=${{ env.VITE_CDN_URL }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-frontend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-frontend:${{ github.sha }}
+
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nginx
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-nginx:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/film-react-nest-nginx:${{ github.sha }}

@@ -1,0 +1,68 @@
+services:
+  frontend:
+    image: ghcr.io/reshetnikovav89/film-react-nest-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_CDN_URL: ${VITE_CDN_URL}
+    restart: unless-stopped
+    volumes:
+      - frontend_dist:/frontend-dist
+
+  backend:
+    image: ghcr.io/reshetnikovav89/film-react-nest-backend:latest
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      database:
+        condition: service_healthy
+    expose:
+      - "3000"
+
+  nginx:
+    image: ghcr.io/reshetnikovav89/film-react-nest-nginx:latest
+    build:
+      context: ./nginx
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro
+
+  database:
+    image: postgres:16
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  frontend_dist:
+  postgres_data:
+  pgadmin_data:
